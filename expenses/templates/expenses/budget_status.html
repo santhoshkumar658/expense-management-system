@@ -1,0 +1,51 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Budget Status | BudgetFlow{% endblock %}
+{% block page_title %}Budget status{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Compare your spending with each monthly limit.</p>{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="section-heading">
+            <h2>Spending against budget</h2>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <form method="get" class="d-flex align-items-center gap-2">
+                    <label class="visually-hidden" for="budget-month">View budget status for month</label>
+                    <select class="form-select form-select-sm" id="budget-month" name="month">
+                        {% for month in available_months %}<option value="{{ month|date:'Y-m' }}" {% if month == selected_month %}selected{% endif %}>{{ month|date:'F Y' }}</option>{% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-light" type="submit">View</button>
+                </form>
+                <a class="btn btn-primary btn-sm" href="{% url 'budget_create' %}"><i class="bi bi-plus-lg me-1"></i>Add budget</a>
+            </div>
+        </div>
+        {% if budget_data %}
+            <div class="table-responsive"><table class="table">
+                <thead>
+                    <tr><th>Monthly budget</th><th>Month</th><th>Limit</th><th>Total spent</th><th>Remaining</th><th>Progress</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in budget_data %}
+                        <tr>
+                            <td class="fw-semibold">Overall spending</td>
+                            <td class="text-nowrap">{{ item.month|date:'M Y' }}</td>
+                            <td>₹{{ item.budget|floatformat:2 }}</td>
+                            <td class="amount-negative">₹{{ item.spent|floatformat:2 }}</td>
+                            <td class="{% if item.remaining < 0 %}amount-negative{% else %}amount-positive{% endif %}">₹{{ item.remaining|floatformat:2 }}</td>
+                            <td class="budget-progress-cell"><div class="d-flex align-items-center gap-2"><div class="progress flex-grow-1"><div class="progress-bar {% if item.percentage_used >= 100 %}danger{% elif item.percentage_used >= 80 %}warning{% endif %}" style="width: {{ item.progress }}%"></div></div><span class="text-nowrap small">{{ item.percentage_used|floatformat:0 }}%</span></div></td>
+                            <td>
+                                {% if item.status == 'Budget Exceeded' %}
+                                    <span class="status-badge status-exceeded">Over limit</span>
+                                {% else %}
+                                    <span class="status-badge status-within">On track</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table></div>
+        {% else %}
+            <div class="empty-state"><i class="bi bi-sliders"></i>No budgets available yet. Create a budget to track category limits.</div>
+        {% endif %}
+    </section>
+{% endblock %}

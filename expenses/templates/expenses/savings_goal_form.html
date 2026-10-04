@@ -1,0 +1,26 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}{% if is_edit %}Update{% else %}New{% endif %} savings goal | BudgetFlow{% endblock %}
+{% block page_title %}{% if is_edit %}Update savings goal{% else %}New savings goal{% endif %}{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Set your target and update the amount you have saved so far.</p>{% endblock %}
+
+{% block content %}
+    <section class="form-panel">
+        <div class="form-intro">
+            <span class="form-icon budget-icon"><i class="bi bi-bullseye"></i></span>
+            <div>
+                <h2>{% if is_edit %}{{ goal.name }}{% else %}What are you saving for?{% endif %}</h2>
+                <p>Track your progress and see how much remains to reach your target.</p>
+            </div>
+        </div>
+        <form method="post" class="form-grid data-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.as_p }}
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1"></i>{% if is_edit %}Save progress{% else %}Create goal{% endif %}</button>
+                <a class="btn btn-light" href="{% url 'savings_goal_list' %}">Cancel</a>
+            </div>
+        </form>
+    </section>
+{% endblock %}

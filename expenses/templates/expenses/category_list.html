@@ -1,0 +1,33 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Categories | BudgetFlow{% endblock %}
+{% block page_title %}Categories{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Organize expenses into useful groups.</p>{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="section-heading">
+            <div><h2>Your categories</h2><span class="transaction-secondary">{{ categories|length }} categories</span></div>
+            <a class="btn btn-primary btn-sm" href="{% url 'category_create' %}"><i class="bi bi-plus-lg me-1"></i>Add category</a>
+        </div>
+
+        {% if categories %}
+            <div class="table-responsive"><table class="table">
+                <thead>
+                    <tr><th>Category</th><th>Created</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                        <tr>
+                            <td><div class="transaction-name"><span class="transaction-icon"><i class="bi bi-tag"></i></span><strong>{{ category.name }}</strong></div></td>
+                            <td>{{ category.created_at|date:'M j, Y' }}</td>
+                            <td><div class="action-group"><a class="btn-icon" href="{% url 'category_edit' category.pk %}" title="Edit category" aria-label="Edit category"><i class="bi bi-pencil"></i></a><a class="btn-icon delete" href="{% url 'category_delete' category.pk %}" title="Delete category" aria-label="Delete category"><i class="bi bi-trash3"></i></a></div></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table></div>
+        {% else %}
+            <div class="empty-state"><i class="bi bi-tags"></i>No categories yet. Add categories to group your expenses.</div>
+        {% endif %}
+    </section>
+{% endblock %}

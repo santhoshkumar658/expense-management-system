@@ -1,0 +1,23 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Budget | BudgetFlow{% endblock %}
+{% block page_title %}{% if is_edit %}Edit budget{% else %}Add budget{% endif %}{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Set one overall spending limit for the selected month.</p>{% endblock %}
+
+{% block content %}
+    <section class="form-panel">
+        <div class="form-intro">
+            <span class="form-icon budget-icon"><i class="bi bi-pie-chart"></i></span>
+            <div>
+                <h2>{% if is_edit %}Update your limit{% else %}Set a spending limit{% endif %}</h2>
+                <p>This limit applies to all expenses during the month.</p>
+            </div>
+        </div>
+        <form method="POST" class="form-grid data-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.as_p }}
+            <div class="form-actions"><button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1"></i>{% if is_edit %}Save changes{% else %}Save budget{% endif %}</button><a class="btn btn-light" href="{% url 'budget_list' %}">Cancel</a></div>
+        </form>
+    </section>
+{% endblock %}

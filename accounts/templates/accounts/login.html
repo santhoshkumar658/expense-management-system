@@ -1,0 +1,40 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Login | BudgetFlow{% endblock %}
+
+{% block auth_content %}
+    <main class="auth-layout">
+        <div class="form-card">
+            <div class="auth-brand"><span class="brand-mark">₹</span><span>BudgetFlow</span></div>
+            <h1>Welcome back</h1>
+            <p class="auth-subtitle">Sign in to manage your budget</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="form-message">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" class="form-grid">
+                {% csrf_token %}
+
+                <div class="form-field">
+                    <label for="username">Username</label>
+                    <input id="username" class="form-control" type="text" name="username" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="password">Password</label>
+                    <input id="password" class="form-control" type="password" name="password" required>
+                </div>
+
+                <button class="btn btn-primary" type="submit">Login</button>
+            </form>
+
+            <p class="auth-links">
+                Don’t have an account?
+                <a href="{% url 'register' %}">Create one</a>
+            </p>
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Savings goals | BudgetFlow{% endblock %}
+{% block page_title %}Savings goals{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Set a target, keep track of what you save, and see what remains.</p>{% endblock %}
+
+{% block content %}
+    <div class="section-heading">
+        <div><h2>Your goals</h2><p class="page-subtitle">Update a goal whenever you add to your savings.</p></div>
+        <a class="btn btn-primary" href="{% url 'savings_goal_create' %}"><i class="bi bi-plus-lg me-1"></i>New goal</a>
+    </div>
+
+    {% if goals %}
+        <section class="row g-3" aria-label="Savings goals">
+            {% for goal in goals %}
+                <div class="col-12 col-lg-6">
+                    <article class="panel savings-goal-card">
+                        <div class="savings-goal-heading">
+                            <div>
+                                <h2>{{ goal.name }}</h2>
+                                {% if goal.target_date %}<p class="savings-goal-date">Target date: {{ goal.target_date|date:'M j, Y' }}</p>{% endif %}
+                            </div>
+                            <div class="action-group">
+                                <a class="btn-icon" href="{% url 'savings_goal_edit' goal.pk %}" title="Update savings progress" aria-label="Update {{ goal.name }}"><i class="bi bi-pencil"></i></a>
+                                <a class="btn-icon delete" href="{% url 'savings_goal_delete' goal.pk %}" title="Delete goal" aria-label="Delete {{ goal.name }}"><i class="bi bi-trash3"></i></a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="savings-goal-amounts"><span>Saved</span><strong>₹{{ goal.saved_amount|floatformat:2 }} / ₹{{ goal.target_amount|floatformat:2 }}</strong></div>
+                            <div class="progress" role="progressbar" aria-label="{{ goal.name }} progress" aria-valuenow="{{ goal.progress_percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar {% if goal.is_complete %}warning{% endif %}" style="width: {{ goal.progress_percentage }}%"></div>
+                            </div>
+                        </div>
+
+                        <p class="savings-goal-remaining">
+                            {% if goal.is_complete %}Goal reached. ₹0.00 remaining.{% else %}₹{{ goal.remaining_amount|floatformat:2 }} remaining.{% endif %}
+                        </p>
+                        <a class="btn btn-light btn-sm" href="{% url 'savings_goal_edit' goal.pk %}"><i class="bi bi-plus-lg me-1"></i>Update saved amount</a>
+                    </article>
+                </div>
+            {% endfor %}
+        </section>
+    {% else %}
+        <div class="empty-state"><i class="bi bi-bullseye"></i>No savings goals yet. Create one to start tracking progress.</div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Expense | BudgetFlow{% endblock %}
+{% block page_title %}{% if is_edit %}Edit expense{% else %}Add expense{% endif %}{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Record a purchase and assign it to a category.</p>{% endblock %}
+
+{% block content %}
+    <section class="form-panel">
+        <div class="form-intro">
+            <span class="form-icon expense-icon"><i class="bi bi-arrow-up-right"></i></span>
+            <div>
+                <h2>{% if is_edit %}Update expense details{% else %}Record an expense{% endif %}</h2>
+                <p>Keep your spending organized by category and date.</p>
+            </div>
+        </div>
+        <form method="POST" class="form-grid data-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.as_p }}
+            <div class="form-actions"><button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1"></i>{% if is_edit %}Save changes{% else %}Save expense{% endif %}</button><a class="btn btn-light" href="{% url 'expense_list' %}">Cancel</a></div>
+        </form>
+    </section>
+{% endblock %}

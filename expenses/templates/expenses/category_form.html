@@ -1,0 +1,23 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Category | BudgetFlow{% endblock %}
+{% block page_title %}{% if is_edit %}Edit category{% else %}Add category{% endif %}{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Create a label to make spending easier to understand.</p>{% endblock %}
+
+{% block content %}
+    <section class="form-panel">
+        <div class="form-intro">
+            <span class="form-icon category-icon"><i class="bi bi-tag"></i></span>
+            <div>
+                <h2>{% if is_edit %}Update category{% else %}Create a category{% endif %}</h2>
+                <p>Give your spending a useful label for easier tracking.</p>
+            </div>
+        </div>
+        <form method="POST" class="form-grid data-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.as_p }}
+            <div class="form-actions"><button class="btn btn-primary" type="submit"><i class="bi bi-check2 me-1"></i>{% if is_edit %}Save changes{% else %}Save category{% endif %}</button><a class="btn btn-light" href="{% url 'category_list' %}">Cancel</a></div>
+        </form>
+    </section>
+{% endblock %}

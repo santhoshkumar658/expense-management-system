@@ -1,0 +1,40 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Income | BudgetFlow{% endblock %}
+{% block page_title %}Income{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Track every source of money coming in.</p>{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="section-heading">
+            <div><h2>Income transactions</h2><span class="transaction-secondary">{{ incomes|length }} records</span></div>
+            <a class="btn btn-primary btn-sm" href="{% url 'income_create' %}"><i class="bi bi-plus-lg me-1"></i>Add income</a>
+        </div>
+
+        {% if incomes %}
+            <div class="table-responsive"><table class="table">
+                <thead>
+                    <tr>
+                        <th>Source</th><th>Description</th><th>Date</th><th class="text-end">Amount</th><th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for income in incomes %}
+                        <tr>
+                            <td><div class="transaction-name"><span class="transaction-icon"><i class="bi bi-arrow-down-left"></i></span><strong>{{ income.source }}</strong></div></td>
+                            <td>{{ income.description|default:'—'|truncatechars:48 }}</td>
+                            <td class="text-nowrap">{{ income.date|date:'M j, Y' }}</td>
+                            <td class="text-end amount-positive">+₹{{ income.amount|floatformat:2 }}</td>
+                            <td><div class="action-group">
+                                <a class="btn-icon" href="{% url 'income_edit' income.pk %}" title="Edit income" aria-label="Edit income"><i class="bi bi-pencil"></i></a>
+                                <a class="btn-icon delete" href="{% url 'income_delete' income.pk %}" title="Delete income" aria-label="Delete income"><i class="bi bi-trash3"></i></a>
+                            </div></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table></div>
+        {% else %}
+            <div class="empty-state"><i class="bi bi-arrow-down-left-circle"></i>No income records yet. Add your first income transaction.</div>
+        {% endif %}
+    </section>
+{% endblock %}

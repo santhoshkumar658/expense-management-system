@@ -1,0 +1,137 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Overview | BudgetFlow{% endblock %}
+{% block page_title %}Overview{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">A clear view of your money, all in one place.</p>{% endblock %}
+
+{% block content %}
+    <section class="hero-panel">
+        <div>
+            <p class="eyebrow">{{ current_month }} overview</p>
+            <h2>Good to see you, {{ user.username }}.</h2>
+            <p class="hero-copy">Here’s how your finances are shaping up this month.</p>
+        </div>
+        <div class="hero-metric">
+            <span>Month net</span>
+            <strong>₹{{ month_net|floatformat:2 }}</strong>
+        </div>
+    </section>
+
+    <section class="row g-3 stats-grid" aria-label="Financial summary">
+        <div class="col-6 col-xl-3"><div class="stat-card">
+            <div class="stat-head"><span class="stat-label">Income this month</span><span class="stat-icon"><i class="bi bi-arrow-down-left"></i></span></div>
+            <strong class="stat-value">₹{{ month_income|floatformat:2 }}</strong><div class="stat-foot">{{ current_month }}</div>
+        </div></div>
+        <div class="col-6 col-xl-3"><div class="stat-card">
+            <div class="stat-head"><span class="stat-label">Spent this month</span><span class="stat-icon orange"><i class="bi bi-arrow-up-right"></i></span></div>
+            <strong class="stat-value">₹{{ month_expense|floatformat:2 }}</strong><div class="stat-foot">{{ current_month }}</div>
+        </div></div>
+        <div class="col-6 col-xl-3"><div class="stat-card">
+            <div class="stat-head"><span class="stat-label">Overall balance</span><span class="stat-icon"><i class="bi bi-wallet2"></i></span></div>
+            <strong class="stat-value">₹{{ balance|floatformat:2 }}</strong><div class="stat-foot">All recorded transactions</div>
+        </div></div>
+        <div class="col-6 col-xl-3"><div class="stat-card">
+            <div class="stat-head"><span class="stat-label">Total income</span><span class="stat-icon red"><i class="bi bi-graph-up-arrow"></i></span></div>
+            <strong class="stat-value">₹{{ total_income|floatformat:2 }}</strong><div class="stat-foot">All time</div>
+        </div></div>
+    </section>
+
+    <section class="row g-3 mb-3">
+        <div class="col-12 col-xl-8"><div class="panel h-100">
+            <div class="panel-heading"><div><h2>Cash flow</h2><p>Income and expenses across the last six months</p></div></div>
+            <div class="chart-wrap"><canvas id="cashflow-chart" aria-label="Monthly income and expense chart"></canvas></div>
+        </div></div>
+        <div class="col-12 col-xl-4"><div class="panel h-100">
+            <div class="panel-heading"><div><h2>Spending mix</h2><p>Expenses by category this month</p></div></div>
+            {% if category_expenses %}
+                <div class="chart-wrap doughnut-wrap"><canvas id="category-chart" aria-label="Expense breakdown by category"></canvas></div>
+                <div class="chart-legend"><span><i class="legend-dot"></i>Category breakdown</span></div>
+            {% else %}
+                <div class="empty-state"><i class="bi bi-pie-chart"></i>No expenses recorded this month.</div>
+            {% endif %}
+        </div></div>
+    </section>
+
+    <section class="row g-3 mb-3">
+        <div class="col-12 col-xl-7"><div class="panel h-100">
+            <div class="section-heading"><h2>Recent transactions</h2><a class="btn btn-sm btn-light" href="{% url 'expense_list' %}">All expenses <i class="bi bi-arrow-right ms-1"></i></a></div>
+            {% if recent_transactions %}
+                <div class="table-responsive"><table class="table">
+                    <thead><tr><th>Transaction</th><th>Date</th><th>Type</th><th class="text-end">Amount</th></tr></thead>
+                    <tbody>
+                    {% for transaction in recent_transactions %}
+                        <tr>
+                            <td><div class="transaction-name"><span class="transaction-icon {% if transaction.kind == 'Expense' %}expense{% endif %}"><i class="bi {% if transaction.kind == 'Income' %}bi-arrow-down-left{% else %}bi-arrow-up-right{% endif %}"></i></span><span>{{ transaction.title }}{% if transaction.detail != 'Income' and transaction.detail %}<span class="transaction-secondary">{{ transaction.detail|truncatechars:34 }}</span>{% endif %}</span></div></td>
+                            <td class="text-nowrap">{{ transaction.date|date:'M j, Y' }}</td>
+                            <td>{{ transaction.kind }}</td>
+                            <td class="text-end {% if transaction.kind == 'Income' %}amount-positive{% else %}amount-negative{% endif %}">{% if transaction.kind == 'Income' %}+{% else %}−{% endif %}₹{{ transaction.amount|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table></div>
+            {% else %}
+                <div class="empty-state"><i class="bi bi-receipt"></i>No transactions yet. Add your first income or expense to get started.</div>
+            {% endif %}
+        </div></div>
+        <div class="col-12 col-xl-5"><div class="panel h-100">
+            <div class="section-heading"><div><h2>Budget coach</h2><p>Month-end estimate against your overall monthly limit.</p></div><a class="btn btn-sm btn-light" href="{% url 'budget_status' %}">Details <i class="bi bi-arrow-right ms-1"></i></a></div>
+            {% if budget_status %}
+                {% for item in budget_status %}
+                    <div class="budget-row">
+                        <div class="budget-row-top"><strong>Overall spending</strong><span>₹{{ item.spent|floatformat:0 }} / ₹{{ item.amount|floatformat:0 }}</span></div>
+                        <div class="progress" role="progressbar" aria-label="{{ item.category }} budget used" aria-valuenow="{{ item.progress|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar {% if item.percentage_used >= 100 %}danger{% elif item.percentage_used >= 80 %}warning{% endif %}" style="width: {{ item.progress }}%"></div></div>
+                        <p class="small mt-2 mb-0 {% if item.will_exceed %}text-danger fw-semibold{% else %}text-success{% endif %}">
+                            {% if item.will_exceed %}
+                                <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>Likely to exceed by ₹{{ item.forecast_overage|floatformat:2 }}; projected spend ₹{{ item.projected_spend|floatformat:2 }}.
+                            {% else %}
+                                On pace to spend ₹{{ item.projected_spend|floatformat:2 }} of ₹{{ item.amount|floatformat:2 }}.
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state"><i class="bi bi-sliders"></i>Set a budget to get a month-end spending forecast.</div>
+            {% endif %}
+            <a class="btn btn-primary btn-sm mt-3" href="{% url 'budget_create' %}"><i class="bi bi-plus-lg me-1"></i>Set a budget</a>
+        </div></div>
+    </section>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary" href="{% url 'income_create' %}"><i class="bi bi-plus-lg me-1"></i>Add income</a>
+        <a class="btn btn-outline-secondary" href="{% url 'expense_create' %}"><i class="bi bi-plus-lg me-1"></i>Add expense</a>
+        <a class="btn btn-outline-secondary" href="{% url 'category_create' %}"><i class="bi bi-tag me-1"></i>New category</a>
+    </div>
+    {{ monthly_labels|json_script:'monthly-labels' }}
+    {{ monthly_income|json_script:'monthly-income' }}
+    {{ monthly_expenses|json_script:'monthly-expenses' }}
+    {{ category_labels|json_script:'category-labels' }}
+    {{ category_values|json_script:'category-values' }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+    const readChartData = (id) => JSON.parse(document.getElementById(id).textContent);
+    const chartColors = ['#176b55', '#d47742', '#6685a3', '#bc9a45', '#8b6f91', '#5c9c99', '#c16a65'];
+    const labels = readChartData('monthly-labels');
+    const currency = (value) => `₹${Number(value).toLocaleString('en-IN')}`;
+
+    new Chart(document.getElementById('cashflow-chart'), {
+        type: 'bar',
+        data: { labels, datasets: [
+            { label: 'Income', data: readChartData('monthly-income'), backgroundColor: '#176b55', borderRadius: 4, maxBarThickness: 24 },
+            { label: 'Expenses', data: readChartData('monthly-expenses'), backgroundColor: '#d47742', borderRadius: 4, maxBarThickness: 24 }
+        ] },
+        options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 7, padding: 18 } }, tooltip: { callbacks: { label: (context) => `${context.dataset.label}: ${currency(context.raw)}` } } }, scales: { x: { grid: { display: false }, ticks: { color: '#78867e' } }, y: { beginAtZero: true, grid: { color: '#edf0ed' }, ticks: { color: '#78867e', callback: currency } } } }
+    });
+
+    const categoryCanvas = document.getElementById('category-chart');
+    if (categoryCanvas) {
+        new Chart(categoryCanvas, {
+            type: 'doughnut',
+            data: { labels: readChartData('category-labels'), datasets: [{ data: readChartData('category-values'), backgroundColor: chartColors, borderColor: '#fff', borderWidth: 3, hoverOffset: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '66%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 7, padding: 14 } }, tooltip: { callbacks: { label: (context) => `${context.label}: ${currency(context.raw)}` } } } }
+        });
+    }
+</script>
+{% endblock %}

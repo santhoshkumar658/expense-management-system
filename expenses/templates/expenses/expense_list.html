@@ -1,0 +1,40 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Expenses | BudgetFlow{% endblock %}
+{% block page_title %}Expenses{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Keep an eye on where your money goes.</p>{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="section-heading">
+            <div><h2>Expense transactions</h2><span class="transaction-secondary">{{ expenses|length }} records</span></div>
+            <a class="btn btn-primary btn-sm" href="{% url 'expense_create' %}"><i class="bi bi-plus-lg me-1"></i>Add expense</a>
+        </div>
+
+        {% if expenses %}
+            <div class="table-responsive"><table class="table">
+                <thead>
+                    <tr>
+                        <th>Category</th><th>Description</th><th>Date</th><th class="text-end">Amount</th><th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                        <tr>
+                            <td><div class="transaction-name"><span class="transaction-icon expense"><i class="bi bi-receipt"></i></span><strong>{{ expense.category.name }}</strong></div></td>
+                            <td>{{ expense.description|default:'—'|truncatechars:48 }}</td>
+                            <td class="text-nowrap">{{ expense.date|date:'M j, Y' }}</td>
+                            <td class="text-end amount-negative">−₹{{ expense.amount|floatformat:2 }}</td>
+                            <td><div class="action-group">
+                                <a class="btn-icon" href="{% url 'expense_edit' expense.pk %}" title="Edit expense" aria-label="Edit expense"><i class="bi bi-pencil"></i></a>
+                                <a class="btn-icon delete" href="{% url 'expense_delete' expense.pk %}" title="Delete expense" aria-label="Delete expense"><i class="bi bi-trash3"></i></a>
+                            </div></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table></div>
+        {% else %}
+            <div class="empty-state"><i class="bi bi-receipt"></i>No expenses recorded yet. Add your first expense transaction.</div>
+        {% endif %}
+    </section>
+{% endblock %}

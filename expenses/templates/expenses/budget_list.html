@@ -1,0 +1,43 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Budgets | BudgetFlow{% endblock %}
+{% block page_title %}Budgets{% endblock %}
+{% block page_subtitle %}<p class="page-subtitle">Set monthly limits that keep spending intentional.</p>{% endblock %}
+
+{% block content %}
+    <section class="panel">
+        <div class="section-heading">
+            <div><h2>Monthly budgets</h2><span class="transaction-secondary">{{ budgets|length }} budgets</span></div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <form method="get" class="d-flex align-items-center gap-2">
+                    <label class="visually-hidden" for="budget-month">View budgets for month</label>
+                    <select class="form-select form-select-sm" id="budget-month" name="month">
+                        {% for month in available_months %}<option value="{{ month|date:'Y-m' }}" {% if month == selected_month %}selected{% endif %}>{{ month|date:'F Y' }}</option>{% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-light" type="submit">View</button>
+                </form>
+                <a class="btn btn-sm btn-light" href="{% url 'budget_status' %}?month={{ selected_month|date:'Y-m' }}">View status</a>
+                <a class="btn btn-primary btn-sm" href="{% url 'budget_create' %}"><i class="bi bi-plus-lg me-1"></i>Add budget</a>
+            </div>
+        </div>
+
+        {% if budgets %}
+            <div class="table-responsive"><table class="table">
+                <thead>
+                    <tr><th>Month</th><th>Overall monthly limit</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for budget in budgets %}
+                        <tr>
+                            <td>{{ budget.month|date:'F Y' }}</td>
+                            <td class="fw-bold">₹{{ budget.amount|floatformat:2 }}</td>
+                            <td><div class="action-group"><a class="btn-icon" href="{% url 'budget_edit' budget.pk %}" title="Edit budget" aria-label="Edit budget"><i class="bi bi-pencil"></i></a><a class="btn-icon delete" href="{% url 'budget_delete' budget.pk %}" title="Delete budget" aria-label="Delete budget"><i class="bi bi-trash3"></i></a></div></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table></div>
+        {% else %}
+            <div class="empty-state"><i class="bi bi-pie-chart"></i>No overall budget set for this month. Set a monthly spending limit to get started.</div>
+        {% endif %}
+    </section>
+{% endblock %}
